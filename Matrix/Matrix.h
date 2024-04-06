@@ -7,7 +7,7 @@
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
 class MatrixBase {
 public:
-	bool operator==(const Child<N, M, Field>& rhs) const;
+	bool operator==(const MatrixBase<N, M, Field, Child>& rhs) const;
 	Child<N, M, Field> operator+(Child<N, M, Field> rhs) const;
 	Child<N, M, Field> operator-(Child<N, M, Field> rhs) const;
 	Child<N, M, Field>& operator+=(Child<N, M, Field> rhs);
@@ -71,7 +71,7 @@ std::ostream& operator<<(std::ostream& os, MatrixBase<Q, I, F, Child> obj) {
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
 Child<M, N, Field> MatrixBase<N, M, Field, Child>::transposed() const {
-	Child<M, N, Field> res(std::vector<std::vector<Field>>(N, std::vector<Field>(M)));
+	Child<M, N, Field> res(std::vector<std::vector<Field>>(M, std::vector<Field>(N)));
 	for (size_t i = 0; i < N; i++)
 	{
 		for (size_t j = 0; j < M; j++)
@@ -93,7 +93,7 @@ MatrixBase<N, M, Field, Child>::MatrixBase() {
 }
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
-bool MatrixBase<N, M, Field, Child>::operator==(const Child<N, M, Field>& rhs) const {
+bool MatrixBase<N, M, Field, Child>::operator==(const MatrixBase<N, M, Field, Child>& rhs) const {
 	return v == rhs.v;
 }
 
@@ -185,6 +185,16 @@ protected:
 };
 
 template <size_t N, typename Field>
+Matrix<N, N, Field>::Matrix() {
+
+}
+
+template <size_t N, typename Field>
+Matrix<N, N, Field>::Matrix(std::vector<std::vector<Field>> v) : MatrixBase<N, N, Field, Matrix>(v) {
+
+}
+
+template <size_t N, typename Field>
 Matrix<N, N, Field> Matrix<N, N, Field>::inverted() const {
 	Matrix<N, N, Field> res(this->transposed());
 	Field det = this->det();
@@ -272,7 +282,7 @@ template<size_t N, size_t M, typename Field, template <size_t, size_t, typename>
 Child<N, M, Field> MatrixBase<N, M, Field, Child>::operator-(Child<N, M, Field> rhs) const
 {
 	MatrixBase r(*this);
-	return (r - rhs);
+	return (r -= rhs);
 }
 
 template<size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>

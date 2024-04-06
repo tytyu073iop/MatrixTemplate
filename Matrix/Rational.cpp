@@ -11,6 +11,7 @@ Rational& Rational::operator+=(const Rational& r) {
 
 Rational& Rational::operator-=(const Rational& r) {
     d -= r.d;
+    return *this;
 }
 
 Rational& Rational::operator*=(const Rational& r) {
@@ -46,6 +47,7 @@ Rational Rational::operator/(const Rational& r) const {
 std::ostream &operator<<(std::ostream &os, const Rational &r)
 {
     os << r.d;
+    return os;
 }
 
 bool Rational::operator==(const Rational& r) const {
