@@ -47,3 +47,7 @@ std::ostream &operator<<(std::ostream &os, const Rational &r)
 {
     os << r.d;
 }
+
+bool Rational::operator==(const Rational& r) const {
+    return d == r.d;
+}

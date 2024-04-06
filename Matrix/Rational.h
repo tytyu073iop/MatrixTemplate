@@ -11,6 +11,7 @@ public:
     Rational operator/(const Rational& r) const;
     Rational operator-() const;
     long double operator<=>(const Rational& r) const;
+    bool operator==(const Rational& r) const;
     Rational& operator+=(const Rational& r);
     Rational& operator-=(const Rational& r);
     Rational& operator*=(const Rational& r);

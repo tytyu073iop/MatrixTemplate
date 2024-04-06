@@ -7,7 +7,7 @@
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
 class MatrixBase {
 public:
-	bool operator==(Child<N, M, Field> rhs) const;
+	bool operator==(const Child<N, M, Field>& rhs) const;
 	Child<N, M, Field> operator+(Child<N, M, Field> rhs) const;
 	Child<N, M, Field> operator-(Child<N, M, Field> rhs) const;
 	Child<N, M, Field>& operator+=(Child<N, M, Field> rhs);
@@ -71,7 +71,7 @@ std::ostream& operator<<(std::ostream& os, MatrixBase<Q, I, F, Child> obj) {
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
 Child<M, N, Field> MatrixBase<N, M, Field, Child>::transposed() const {
-	Child<M, N, Field> res;
+	Child<M, N, Field> res(std::vector<std::vector<Field>>(N, std::vector<Field>(M)));
 	for (size_t i = 0; i < N; i++)
 	{
 		for (size_t j = 0; j < M; j++)
@@ -93,7 +93,7 @@ MatrixBase<N, M, Field, Child>::MatrixBase() {
 }
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
-bool MatrixBase<N, M, Field, Child>::operator==(Child<N, M, Field> rhs) const {
+bool MatrixBase<N, M, Field, Child>::operator==(const Child<N, M, Field>& rhs) const {
 	return v == rhs.v;
 }
 
@@ -142,10 +142,10 @@ std::vector<Field>& MatrixBase<N, M, Field, Child>::operator[](size_t Row) {
 
 template <size_t N, size_t M, typename Field = Rational>
 struct Matrix : public MatrixBase<N, M, Field, Matrix> {
-	friend MatrixBase<N, M, Field, Matrix>;
 	Matrix(std::vector<std::vector<Field>> v);
 protected:
 	Matrix();
+	friend MatrixBase<N, M, Field, Matrix>;
 };
 
 template <size_t N, size_t M, typename Field>
@@ -162,7 +162,6 @@ Matrix<N, M, Field>::Matrix() : MatrixBase<N, M, Field, Matrix>()
 
 template <size_t N, typename Field>
 struct Matrix<N, N, Field> : public MatrixBase<N, N, Field, Matrix> {
-	friend MatrixBase<N, N, Field, Matrix>;
 	Matrix<N, N, Field> inverted() const;
 	Matrix<N, N, Field>& invert();
 	Field trace() const;
@@ -171,6 +170,7 @@ struct Matrix<N, N, Field> : public MatrixBase<N, N, Field, Matrix> {
 	Matrix();
 	Matrix(std::vector<std::vector<Field>> v);
 protected:
+	friend MatrixBase<N, N, Field, Matrix>;
 	size_t inversions(std::vector<size_t> ind) const {
 		size_t res = 0;
 		for (auto i = ind.begin(); i != ind.end(); i++) {
@@ -180,6 +180,7 @@ protected:
 				}
 			}
 		}
+		return res;
 	}
 };
 
@@ -188,7 +189,7 @@ Matrix<N, N, Field> Matrix<N, N, Field>::inverted() const {
 	Matrix<N, N, Field> res(this->transposed());
 	Field det = this->det();
 	det = Field(1) / det;
-	res *= det;
+	res.MatrixBase<N, N, Field, Matrix>::operator*=(det);
 	return res;
 }
 
