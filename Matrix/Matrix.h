@@ -185,8 +185,12 @@ protected:
 };
 
 template <size_t N, typename Field>
-Matrix<N, N, Field>::Matrix() {
-
+Matrix<N, N, Field>::Matrix() : MatrixBase<N, N, Field, Matrix>() {
+	for (size_t i = 0; i < N; i++)
+	{
+		this->v[i][i] = Field(1);
+	}
+	
 }
 
 template <size_t N, typename Field>
@@ -234,7 +238,7 @@ Field Matrix<N, N, Field>::det() const {
 	{
 		ind.push_back(i);
 	}
-	while (std::next_permutation(ind.begin(), ind.end()))
+	do
 	{
 		Field ress = 1;
 		for (size_t j = 0; j < N; j++) {
@@ -242,7 +246,7 @@ Field Matrix<N, N, Field>::det() const {
 		}
 		ress *= (this->inversions(ind) % 2 == 0 ? 1 : -1);
 		res += ress;
-	}
+	} while (std::next_permutation(ind.begin(), ind.end()));
 	return res;
 }
 

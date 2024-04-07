@@ -13,7 +13,7 @@ int main() {
 	Matrix <3, 4> m({{0, 1, 2, 3}, {4, 5, 6, 7}, {8, 19, 23, 40}});
 	std::cout << "m:\n" << m << '\n';
 	Matrix <3, 4> m2({{0, 1, 2, 3}, {4, 5, 6, 7}, {8, 19, 23, 40}});
-	std::cout << "m2 == m" << (m2 == m) << '\n';
+	std::cout << "m2 == m: " << (m2 == m) << '\n';
 	Matrix <3, 3> sq;
 	std::cout << "sq:\n" << sq << '\n';
 	std::cout << "m + m:\n" << (m + m) << '\n';
@@ -26,15 +26,15 @@ int main() {
 	// std::cout << "m + sq:\n" << (m + sq) << '\n'; // do not compile
 	{
 		Matrix t(m);
-		std::cout << "t == m" << (t == m) << '\n';
-		std::cout << "t += m" << (t += m) << '\n';
-		std::cout << "t -= m" << (t -= m) << '\n';
-		std::cout << "t *= 3" << (t *= 3) << '\n';
+		std::cout << "t == m: " << (t == m) << '\n';
+		std::cout << "t += m:\n" << (t += m) << '\n';
+		std::cout << "t -= m:\n" << (t -= m) << '\n';
+		std::cout << "t *= 3:\n" << (t *= 3) << '\n';
 	}
 	{
 		Matrix t(sq);
-		std::cout << "t == sq" << (t == sq) << '\n';
-		std::cout << "t *= sq" << (t *= sq) << '\n';
+		std::cout << "t == sq: " << (t == sq) << '\n';
+		std::cout << "t *= sq:\n" << (t *= sq) << '\n';
 	}
 	// std::cout << "det(m): " << m.det() << '\n'; // do not compile
 	std::cout << "det(sq): " << (sq.det()) << '\n';
@@ -47,7 +47,7 @@ int main() {
 	std::cout << "sq.inverted:\n" << (sq.inverted()) << '\n';
 	{
 		Matrix t(sq);
-		std::cout << "t == sq" << (t == sq) << '\n';
+		std::cout << "t == sq: " << (t == sq) << '\n';
 		std::cout << "t.invert():\n" << (t.invert()) << '\n';
 	}
 	std::cout << "m.getRow(0): ";
