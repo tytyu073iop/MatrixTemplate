@@ -61,7 +61,7 @@ int main() {
 	std::cout << "m[0][0]: " << m[0][0] << '\n';
 	{
 		const Matrix t(m);
-		std::cout << "t == m" << (t == m) << '\n';
+		std::cout << "t == m: " << (t == m) << '\n';
 		std::cout << "t[0][0]: " << t[0][0] << '\n';
 		// t[0][0] = 8; // do not compile 
 	}

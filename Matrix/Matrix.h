@@ -170,6 +170,7 @@ struct Matrix<N, N, Field> : public MatrixBase<N, N, Field, Matrix> {
 	Matrix();
 	Matrix(std::vector<std::vector<Field>> v);
 protected:
+	Field detAsF(const std::vector<std::vector<Field>>& v) const;
 	friend MatrixBase<N, N, Field, Matrix>;
 	size_t inversions(std::vector<size_t> ind) const {
 		size_t res = 0;
@@ -231,7 +232,7 @@ Matrix<N, N, Field>& Matrix<N, N, Field>::operator*=(const Matrix<N, N, Field>& 
 }
 
 template <size_t N, typename Field>
-Field Matrix<N, N, Field>::det() const {
+Field Matrix<N, N, Field>::detAsF(const std::vector<std::vector<Field>>& v) const {
 	Field res = 0; //neutral element
 	std::vector<size_t> ind;
 	for (size_t i = 0; i < N; i++)
@@ -242,12 +243,17 @@ Field Matrix<N, N, Field>::det() const {
 	{
 		Field ress = 1;
 		for (size_t j = 0; j < N; j++) {
-			ress *= this->v[j][ind[j]];
+			ress *= v[j][ind[j]];
 		}
 		ress *= (this->inversions(ind) % 2 == 0 ? 1 : -1);
 		res += ress;
 	} while (std::next_permutation(ind.begin(), ind.end()));
 	return res;
+}
+
+template <size_t N, typename Field>
+Field Matrix<N, N, Field>::det() const {
+	return detAsF(this->v);
 }
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
