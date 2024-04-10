@@ -183,7 +183,65 @@ protected:
 		}
 		return res;
 	}
+	bool NextSet(std::vector<std::vector<Field>>& a, int m) 
+	{
+		int n = a.size();
+	    int k = m;
+	    for (int i = k - 1; i >= 0; --i)
+	      if (a[i] < n - k + i + 1) 
+	      {
+	        ++a[i];
+	        for (int j = i + 1; j < k; ++j)
+	          a[j] = a[j - 1] + 1;
+	        return true;
+	      }
+	    return false;
+	}
 };
+
+template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
+size_t MatrixBase<N, M, Field, Child>::rank() const {
+	size_t res = 0;
+	size_t Q = std::min(N, M);
+	for (size_t i = 0; i < Q; i++)
+	{
+		bool b = true;
+		std::vector<size_t> rows;
+		for (size_t j = 0; j < Q; j++)
+		{
+			rows.push_back(j);
+		}
+		while (NextSet(rows, i+1)) {
+			std::vector<size_t> cols;
+			for (size_t j = 0; j < Q; j++)
+			{
+				rows.push_back(j);
+			}
+			while (NextSet(cols, i+1)) {
+				std::vector<std::vector<Field>> tmp(i, std::vector<Field>(i));
+				for (size_t j = 0; j < i; j++) {
+					for (size_t k = 0; k < i; k++)
+					{
+						v[j][k] = v[rows[j]][cols[k]];
+					}
+				}
+				if (this->detAsF(tmp) != 0) {
+					res++;
+					b = false;
+					break;
+				}
+			}
+			if (!b)
+			{
+				break;
+			}
+		}
+		if (b) {
+			break;
+		}
+	}
+	return res;
+}
 
 template <size_t N, typename Field>
 Matrix<N, N, Field>::Matrix() : MatrixBase<N, N, Field, Matrix>() {
