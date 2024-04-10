@@ -40,7 +40,11 @@ int main() {
 	std::cout << "det(sq): " << (sq.det()) << '\n';
 	std::cout << "m.transposed:\n" << (m.transposed()) << '\n';
 	// std::cout << "m.rank: " << m.rank() << '\n'; // do not compile
-	// std::cout << "sq.rank: " << sq.rank() << '\n'; // can't make
+	std::cout << "m.rank: " << m.rank() << '\n'; // can't make
+	{
+		Matrix<3, 3> t({ {1, 0, 0}, {0, 1, 0}, {1, 1, 0} });
+		std::cout << "t.rank: " << t.rank() << '\n';
+	}
 	// std::cout << "m.trace" << m.trace() << '\n'; // do not compile
 	std::cout << "sq.trace" << (sq.trace()) << '\n';
 	// std::cout << "m.inverted:\n" << (m.inverted()) << '\n'; // do not compile

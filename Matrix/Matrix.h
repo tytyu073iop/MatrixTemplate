@@ -28,6 +28,32 @@ protected:
 	MatrixBase(); //Only for sons
 	MatrixBase(std::vector<std::vector<Field>> v); //you have to enter size
 	std::vector<std::vector<Field>> v;
+	bool NextSet(std::vector<size_t>& a, size_t m) const
+	{
+		int n = a.size();
+		int k = m;
+		for (int i = k - 1; i >= 0; --i)
+			if (a[i] < n - k + i /*+ 1*/)
+			{
+				++a[i];
+				for (int j = i + 1; j < k; ++j)
+					a[j] = a[j - 1] + 1;
+				return true;
+			}
+		return false;
+	}
+	Field detAsF(const std::vector<std::vector<Field>>& v) const;
+	size_t inversions(std::vector<size_t> ind) const {
+		size_t res = 0;
+		for (auto i = ind.begin(); i != ind.end(); i++) {
+			for (auto j = i + 1; j != ind.end(); j++) {
+				if (*i > *j) {
+					res++;
+				}
+			}
+		}
+		return res;
+	}
 };
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
@@ -170,59 +196,35 @@ struct Matrix<N, N, Field> : public MatrixBase<N, N, Field, Matrix> {
 	Matrix();
 	Matrix(std::vector<std::vector<Field>> v);
 protected:
-	Field detAsF(const std::vector<std::vector<Field>>& v) const;
+	
 	friend MatrixBase<N, N, Field, Matrix>;
-	size_t inversions(std::vector<size_t> ind) const {
-		size_t res = 0;
-		for (auto i = ind.begin(); i != ind.end(); i++) {
-			for (auto j = i + 1; j != ind.end(); j++) {
-				if (*i > *j) {
-					res++;
-				}
-			}
-		}
-		return res;
-	}
-	bool NextSet(std::vector<std::vector<Field>>& a, int m) 
-	{
-		int n = a.size();
-	    int k = m;
-	    for (int i = k - 1; i >= 0; --i)
-	      if (a[i] < n - k + i + 1) 
-	      {
-	        ++a[i];
-	        for (int j = i + 1; j < k; ++j)
-	          a[j] = a[j - 1] + 1;
-	        return true;
-	      }
-	    return false;
-	}
+	
 };
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
 size_t MatrixBase<N, M, Field, Child>::rank() const {
 	size_t res = 0;
 	size_t Q = std::min(N, M);
-	for (size_t i = 0; i < Q; i++)
+	for (size_t i = 1; i <= Q; i++)
 	{
 		bool b = true;
 		std::vector<size_t> rows;
-		for (size_t j = 0; j < Q; j++)
+		for (size_t j = 0; j < M; j++)
 		{
 			rows.push_back(j);
 		}
-		while (NextSet(rows, i+1)) {
+		do {
 			std::vector<size_t> cols;
-			for (size_t j = 0; j < Q; j++)
+			for (size_t j = 0; j < N; j++)
 			{
-				rows.push_back(j);
+				cols.push_back(j);
 			}
-			while (NextSet(cols, i+1)) {
+			do {
 				std::vector<std::vector<Field>> tmp(i, std::vector<Field>(i));
 				for (size_t j = 0; j < i; j++) {
 					for (size_t k = 0; k < i; k++)
 					{
-						v[j][k] = v[rows[j]][cols[k]];
+						tmp[j][k] = v[rows[j]][cols[k]];
 					}
 				}
 				if (this->detAsF(tmp) != 0) {
@@ -230,12 +232,12 @@ size_t MatrixBase<N, M, Field, Child>::rank() const {
 					b = false;
 					break;
 				}
-			}
+			} while (NextSet(cols, i));
 			if (!b)
 			{
 				break;
 			}
-		}
+		} while (NextSet(rows, i));
 		if (b) {
 			break;
 		}
@@ -289,18 +291,18 @@ Matrix<N, N, Field>& Matrix<N, N, Field>::operator*=(const Matrix<N, N, Field>& 
 	return *this;
 }
 
-template <size_t N, typename Field>
-Field Matrix<N, N, Field>::detAsF(const std::vector<std::vector<Field>>& v) const {
+template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
+Field MatrixBase<N, M, Field, Child>::detAsF(const std::vector<std::vector<Field>>& v) const {
 	Field res = 0; //neutral element
 	std::vector<size_t> ind;
-	for (size_t i = 0; i < N; i++)
+	for (size_t i = 0; i < v.size(); i++)
 	{
 		ind.push_back(i);
 	}
 	do
 	{
 		Field ress = 1;
-		for (size_t j = 0; j < N; j++) {
+		for (size_t j = 0; j < v.size(); j++) {
 			ress *= v[j][ind[j]];
 		}
 		ress *= (this->inversions(ind) % 2 == 0 ? 1 : -1);
@@ -311,7 +313,7 @@ Field Matrix<N, N, Field>::detAsF(const std::vector<std::vector<Field>>& v) cons
 
 template <size_t N, typename Field>
 Field Matrix<N, N, Field>::det() const {
-	return detAsF(this->v);
+	return this->detAsF(this->v);
 }
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
