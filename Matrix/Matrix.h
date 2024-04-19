@@ -224,10 +224,10 @@ size_t MatrixBase<N, M, Field, Child>::rank() const {
 				for (size_t j = 0; j < i; j++) {
 					for (size_t k = 0; k < i; k++)
 					{
-						tmp[j][k] = v[rows[j]][cols[k]];
+						tmp[k][j] = v[cols[k]][rows[j]];
 					}
 				}
-				if (this->detAsF(tmp) != 0) {
+				if (this->detAsF(tmp) != Field(0)) {
 					res++;
 					b = false;
 					break;
@@ -292,23 +292,70 @@ Matrix<N, N, Field>& Matrix<N, N, Field>::operator*=(const Matrix<N, N, Field>& 
 }
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
-Field MatrixBase<N, M, Field, Child>::detAsF(const std::vector<std::vector<Field>>& v) const {
-	Field res = 0; //neutral element
-	std::vector<size_t> ind;
+Field MatrixBase<N, M, Field, Child>::detAsF(const std::vector<std::vector<Field>>& wer) const {
+	struct MatrixVector : std::vector<Field> {
+		MatrixVector() : std::vector<Field>() {}
+		MatrixVector(const std::vector<Field>& v) : std::vector<Field>(v) {}
+		MatrixVector& operator+=(const MatrixVector& rhs) {
+			for (size_t i = 0; i < this->size(); i++)
+			{
+				this->at(i) += rhs.at(i);
+			}
+			return *this;
+		}
+		MatrixVector& operator-=(const MatrixVector& rhs) {
+			return (*this += (rhs * -1));
+		}
+		MatrixVector operator*(const Field& rhs) const {
+			MatrixVector res;
+			for (size_t i = 0; i < this->size(); i++)
+			{
+				res.push_back(this->at(i) * rhs);
+			}
+			return res;
+		}
+		MatrixVector operator/(const Field& rhs) const {
+			return *this * (1 / rhs);
+		}
+	};
+	// Field res = 0; //neutral element
+	// std::vector<size_t> ind;
+	// for (size_t i = 0; i < v.size(); i++)
+	// {
+	// 	ind.push_back(i);
+	// }
+	// do
+	// {
+	// 	Field ress = 1;
+	// 	for (size_t j = 0; j < v.size(); j++) {
+	// 		ress *= v[j][ind[j]];
+	// 	}
+	// 	ress *= (this->inversions(ind) % 2 == 0 ? 1 : -1);
+	// 	res += ress;
+	// } while (std::next_permutation(ind.begin(), ind.end()));
+	// return res;
+	std::vector<MatrixVector> v;
+	for (size_t i = 0; i < wer.size(); i++)
+	{
+		v.push_back(MatrixVector(wer[i]));
+	}
 	for (size_t i = 0; i < v.size(); i++)
 	{
-		ind.push_back(i);
-	}
-	do
-	{
-		Field ress = 1;
-		for (size_t j = 0; j < v.size(); j++) {
-			ress *= v[j][ind[j]];
+		if (v[i][i] == Field(0)) {
+			return Field(0);
 		}
-		ress *= (this->inversions(ind) % 2 == 0 ? 1 : -1);
-		res += ress;
-	} while (std::next_permutation(ind.begin(), ind.end()));
+		for (size_t j = i + 1; j < v.size(); j++) {
+			Field tmp = v[j][i] / v[i][i];
+			v[j] -= (v[i] * tmp);
+		}
+	}
+	Field res = 1;
+	for (size_t i = 0; i < v.size(); i++)
+	{
+		res *= v[i][i];
+	}
 	return res;
+
 }
 
 template <size_t N, typename Field>
