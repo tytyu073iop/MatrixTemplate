@@ -2,19 +2,25 @@
 #include <iostream>
 
 class Rational {
-    long double d = 0;
+protected:
+    void MakeBeaty();
+    int d = 0;
+    int n = 0;
 public:
-    Rational(long double d = 0);
+    Rational(int d = 0, int n = 1);
     Rational operator+(const Rational& r) const;
     Rational operator-(const Rational& r) const;
     Rational operator*(const Rational& r) const;
     Rational operator/(const Rational& r) const;
     Rational operator-() const;
-    long double operator<=>(const Rational& r) const;
+    double operator<=>(const Rational& r) const;
     bool operator==(const Rational& r) const;
-    Rational& operator+=(const Rational& r);
-    Rational& operator-=(const Rational& r);
+    Rational& operator+=(Rational r);
+    Rational& operator-=(Rational r);
     Rational& operator*=(const Rational& r);
     Rational& operator/=(const Rational& r);
     friend std::ostream& operator<<(std::ostream& os, const Rational& r);
+    operator double() const {
+        return (double)d / n;
+    }
 };
