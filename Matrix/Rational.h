@@ -14,7 +14,7 @@ public:
     Rational operator/(const Rational& r) const;
     Rational operator-() const;
     double operator<=>(const Rational& r) const;
-    bool operator==(const Rational& r) const;
+    friend bool operator==(const Rational& lhs, const Rational& rhs);
     Rational& operator+=(Rational r);
     Rational& operator-=(Rational r);
     Rational& operator*=(const Rational& r);

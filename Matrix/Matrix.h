@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <functional>
 #include "Rational.h"
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
@@ -25,6 +26,31 @@ public:
 	template <size_t Q, size_t I, typename F, template <size_t, size_t, typename> typename Ch>
 	friend std::ostream& operator<<(std::ostream& os, MatrixBase<Q, I, F, Ch> obj);
 protected:
+	struct MatrixVector : std::vector<Field> {
+		MatrixVector() : std::vector<Field>() {}
+		MatrixVector(const std::vector<Field>& v) : std::vector<Field>(v) {}
+		MatrixVector& operator+=(const MatrixVector& rhs) {
+			for (size_t i = 0; i < this->size(); i++)
+			{
+				this->at(i) += rhs.at(i);
+			}
+			return *this;
+		}
+		MatrixVector& operator-=(const MatrixVector& rhs) {
+			return (*this += (rhs * -1));
+		}
+		MatrixVector operator*(const Field& rhs) const {
+			MatrixVector res;
+			for (size_t i = 0; i < this->size(); i++)
+			{
+				res.push_back(this->at(i) * rhs);
+			}
+			return res;
+		}
+		MatrixVector operator/(const Field& rhs) const {
+			return *this * (1 / rhs);
+		}
+	};
 	MatrixBase(); //Only for sons
 	MatrixBase(std::vector<std::vector<Field>> v); //you have to enter size
 	std::vector<std::vector<Field>> v;
@@ -203,46 +229,95 @@ protected:
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
 size_t MatrixBase<N, M, Field, Child>::rank() const {
-	size_t res = 0;
-	size_t Q = std::min(N, M);
-	for (size_t i = 1; i <= Q; i++)
-	{
-		bool b = true;
-		std::vector<size_t> rows;
-		for (size_t j = 0; j < M; j++)
+	// size_t res = 0;
+	// size_t Q = std::min(N, M);
+	// for (size_t i = 1; i <= Q; i++)
+	// {
+	// 	bool b = true;
+	// 	std::vector<size_t> rows;
+	// 	for (size_t j = 0; j < M; j++)
+	// 	{
+	// 		rows.push_back(j);
+	// 	}
+	// 	do {
+	// 		std::vector<size_t> cols;
+	// 		for (size_t j = 0; j < N; j++)
+	// 		{
+	// 			cols.push_back(j);
+	// 		}
+	// 		do {
+	// 			std::vector<std::vector<Field>> tmp(i, std::vector<Field>(i));
+	// 			for (size_t j = 0; j < i; j++) {
+	// 				for (size_t k = 0; k < i; k++)
+	// 				{
+	// 					tmp[k][j] = v[cols[k]][rows[j]];
+	// 				}
+	// 			}
+	// 			if (this->detAsF(tmp) != Field(0)) {
+	// 				res++;
+	// 				b = false;
+	// 				break;
+	// 			}
+	// 		} while (NextSet(cols, i));
+	// 		if (!b)
+	// 		{
+	// 			break;
+	// 		}
+	// 	} while (NextSet(rows, i));
+	// 	if (b) {
+	// 		break;
+	// 	}
+	// }
+	// return res;
+	size_t s = N <= M ? N : M;
+	std::vector<MatrixVector> tv;
+	if (N <= M) {
+		for (size_t i = 0; i < s; i++)
 		{
-			rows.push_back(j);
+			tv.push_back(v[i]);
 		}
-		do {
-			std::vector<size_t> cols;
+	} else {
+		for (size_t i = 0; i < M; i++)
+		{
+			MatrixVector q;
 			for (size_t j = 0; j < N; j++)
 			{
-				cols.push_back(j);
+				q.push_back(v[j][i]);
 			}
-			do {
-				std::vector<std::vector<Field>> tmp(i, std::vector<Field>(i));
-				for (size_t j = 0; j < i; j++) {
-					for (size_t k = 0; k < i; k++)
-					{
-						tmp[k][j] = v[cols[k]][rows[j]];
-					}
-				}
-				if (this->detAsF(tmp) != Field(0)) {
-					res++;
-					b = false;
-					break;
-				}
-			} while (NextSet(cols, i));
-			if (!b)
-			{
-				break;
-			}
-		} while (NextSet(rows, i));
-		if (b) {
-			break;
+			tv.push_back(q);
 		}
 	}
-	return res;
+	//auto tmp = N <= M ? *this : this->transposed();
+	//auto tv = tmp.v
+	
+	for (size_t i = 0; i < s; i++)
+	{
+		if (tv[i][i] == Field(0)) {
+			bool iz = true;
+			for (size_t j = i + 1; j < s; j++)
+			{
+				if (tv[j][i] != Field(0)) {
+					std::swap(tv[i], tv[j]);
+					iz = false;
+					break;
+				}
+			}
+			if (iz) {
+				s--;
+				for (size_t j = i; j < s; j++) {
+					std::swap(tv[i][j], tv[i][s]);
+				}
+				i--;
+				continue;
+			}
+		}
+		for (size_t j = i + 1; j < s; j++)
+		{
+			auto t = tv[j][i] / tv[i][i];
+			tv[j] -= tv[i] * t;
+		}
+	}
+	return s;
 }
 
 template <size_t N, typename Field>
@@ -293,31 +368,6 @@ Matrix<N, N, Field>& Matrix<N, N, Field>::operator*=(const Matrix<N, N, Field>& 
 
 template <size_t N, size_t M, typename Field, template <size_t, size_t, typename> typename Child>
 Field MatrixBase<N, M, Field, Child>::detAsF(const std::vector<std::vector<Field>>& wer) const {
-	struct MatrixVector : std::vector<Field> {
-		MatrixVector() : std::vector<Field>() {}
-		MatrixVector(const std::vector<Field>& v) : std::vector<Field>(v) {}
-		MatrixVector& operator+=(const MatrixVector& rhs) {
-			for (size_t i = 0; i < this->size(); i++)
-			{
-				this->at(i) += rhs.at(i);
-			}
-			return *this;
-		}
-		MatrixVector& operator-=(const MatrixVector& rhs) {
-			return (*this += (rhs * -1));
-		}
-		MatrixVector operator*(const Field& rhs) const {
-			MatrixVector res;
-			for (size_t i = 0; i < this->size(); i++)
-			{
-				res.push_back(this->at(i) * rhs);
-			}
-			return res;
-		}
-		MatrixVector operator/(const Field& rhs) const {
-			return *this * (1 / rhs);
-		}
-	};
 	// Field res = 0; //neutral element
 	// std::vector<size_t> ind;
 	// for (size_t i = 0; i < v.size(); i++)

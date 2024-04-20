@@ -71,9 +71,9 @@ std::ostream &operator<<(std::ostream &os, const Rational &r)
     return os;
 }
 
-bool Rational::operator==(const Rational& r) const {
-    return d == r.d && n == r.n;
-}
+bool operator==(const Rational& l, const Rational& r) {
+    return l.d == r.d && l.n == r.n;
+}\
 
 void Rational::MakeBeaty() {
     int gcd = std::gcd(d, n);
