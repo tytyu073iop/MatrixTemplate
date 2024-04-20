@@ -73,5 +73,6 @@ int main() {
 		SquareMatrix<3> t;
 		std::cout << "t from square:\n" << t << '\n';
 	}
+	std::cout << "\nend of program\n";
 	return 0;
 }
